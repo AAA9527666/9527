@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歌星金曲 MV 列表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        .sidebar {
+            width: 320px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar.show {
+            transform: translateX(0);
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.2);
+        }
+        .sidebar-header h2 {
+            color: #fff;
+            font-size: 1.2rem;
+        }
+        .toggle-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .toggle-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .video-list {
+            list-style: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .video-item {
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .video-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .video-item.active {
+            background: rgba(255,255,255,0.15);
+            color: #00d4ff;
+            border-left: 3px solid #00d4ff;
+        }
+        .video-item .number {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            min-width: 24px;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .menu-trigger {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 80px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 0 10px 10px 0;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.3s;
+            z-index: 50;
+        }
+        .menu-trigger:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .menu-trigger span {
+            width: 16px;
+            height: 2px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 1px;
+        }
+        .player-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .now-playing {
+            color: #fff;
+            font-size: 1.3rem;
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+        .nav-buttons {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🎵 视频列表 (共29首)</h2>
+                <button class="toggle-btn" onclick="toggleSidebar()">✕</button>
+            </div>
+            <ul class="video-list" id="videoList"></ul>
+        </div>
+        
+        <button class="menu-trigger" id="menuTrigger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
+        <div class="main">
+            <div class="player-container">
+                <div class="now-playing" id="nowPlaying">正在播放: 歌MV</div>
+                <video id="player" controls>
+                    <source src="http://vd4.bdstatic.com/mda-ickhjq8gkcxz55i1/sc/mda-ickhjq8gkcxz55i1.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="prevVideo()">◀ 上一首</button>
+                <button class="nav-btn" onclick="nextVideo()">下一首 ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videos = [
+            { name: "汪汪队立大功大电影（国语版）", url: "https://hd.ijycnd.com/play/PdROB9Ye/index.m3u8"}, 
+            { name: "歌MV", url: "http://vd4.bdstatic.com/mda-ickhjq8gkcxz55i1/sc/mda-ickhjq8gkcxz55i1.mp4" },
+            { name: "歌MV2", url: "http://vd4.bdstatic.com/mda-ihkwerpgqm1v3ehy/sc/mda-ihkwerpgqm1v3ehy.mp4" },
+            { name: "歌MV3", url: "http://vd4.bdstatic.com/mda-jhid37v9u4vny09j/sc/mda-jhid37v9u4vny09j.mp4" },
+            { name: "歌MV4", url: "http://vd4.bdstatic.com/mda-icpieeuwfuwruijw/sc/mda-icpieeuwfuwruijw.mp4" },
+            { name: "歌MV5", url: "http://vd4.bdstatic.com/mda-jhtriuc2z5fddtre/sc/mda-jhtriuc2z5fddtre.mp4" },
+            { name: "歌MV6", url: "http://vd4.bdstatic.com/mda-jepbbqntd414qsem/sc/mda-jepbbqntd414qsem.mp4" },
+            { name: "歌MV7", url: "http://vd4.bdstatic.com/mda-ji3nh9t9qpewj26m/sc/mda-ji3nh9t9qpewj26m.mp4" },
+            { name: "情歌DJ红尘没有错", url: "https://vd3.bdstatic.com/mda-nadfng7qz0sr3ff3/sc/bd265_cae_delogo/1643480883586586354/mda-nadfng7qz0sr3ff3.mp4" },
+            { name: "精选七首DJ情歌", url: "https://vd3.bdstatic.com/mda-nc6a3qnsy1yruwa1/720p/h264_delogo/1646637449945468450/mda-nc6a3qnsy1yruwa1.mp4" },
+            { name: "哥还是当年的哥", url: "https://vd3.bdstatic.com/mda-nbgnipfqnp99z7zq/sc/bd265_cae_delogo/1645155978347002274/mda-nbgnipfqnp99z7zq.mp4" },
+            { name: "车载必备DJ殇雪", url: "https://vd3.bdstatic.com/mda-mhve4gb9hi8cstzk/1080p/cae_h264/1630319514896018158/mda-mhve4gb9hi8cstzk.mp4" },
+            { name: "DJ心在跳情在烧", url: "https://vd4.bdstatic.com/mda-mhwf07t27w3gi1y7/1080p/cae_h264/1630406994590156367/mda-mhwf07t27w3gi1y7.mp4" },
+            { name: "郭镐鸣野摩托", url: "https://vd3.bdstatic.com/mda-mekfm7wu6f4rtt99/1080p/cae_h264/1621595318412084671/mda-mekfm7wu6f4rtt99.mp4" },
+            { name: "DJ沈念版", url: "https://vd3.bdstatic.com/mda-mgr9s5pv0jeqbcm8/1080p/cae_h264/1627298307874491239/mda-mgr9s5pv0jeqbcm8.mp4" },
+            { name: "人间惊鸿客", url: "https://vd3.bdstatic.com/mda-mh2bbyjcqjxjhzkd/1080p/cae_h264/1627978577559447916/mda-mh2bbyjcqjxjhzkd.mp4" },
+            { name: "DJ版三月里的小雨", url: "https://vd2.bdstatic.com/mda-mgwegh0bzv4cy6cb/1080p/cae_h264/1627727251470197083/mda-mgwegh0bzv4cy6cb.mp4" },
+            { name: "DJ版望爱却步", url: "https://vd4.bdstatic.com/mda-mh3ei4sg2jypty79/1080p/cae_h264/1628072927342489970/mda-mh3ei4sg2jypty79.mp4" },
+            { name: "唱着情歌流着泪", url: "https://vd3.bdstatic.com/mda-mhwaejanf0ie6b8j/1080p/cae_h264/1630409563129833732/mda-mhwaejanf0ie6b8j.mp4" },
+            { name: "伤感DJ等", url: "https://vd2.bdstatic.com/mda-mhq92a7nafrh8dma/1080p/cae_h264/1629977686796490849/mda-mhq92a7nafrh8dma.mp4" },
+            { name: "DJ版时间会知道你好不好", url: "https://vd3.bdstatic.com/mda-mhairve7gvye1192/1080p/cae_h264/1629457148988604256/mda-mhairve7gvye1192.mp4" },
+            { name: "DJ版蜜雪冰城", url: "https://vd3.bdstatic.com/mda-mhbae2pwwxhyxjcz/1080p/cae_h264/1628767594518574030/mda-mhbae2pwwxhyxjcz.mp4" },
+            { name: "无味 DJ版", url: "https://vd3.bdstatic.com/mda-mgqiagirsmmpuarm/1080p/cae_h264/1627218846577884242/mda-mgqiagirsmmpuarm.mp4" },
+            { name: "精选五首DJ男声串烧", url: "https://vd2.bdstatic.com/mda-maqfk730tsig88wr/v2-hknm/1080p/mda-maqfk730tsig88wr.mp4" },
+            { name: "韩可可错位时空DJ版", url: "https://vd3.bdstatic.com/mda-mgciytzb45z6z8yj/1080p/cae_h264/1626183756603775947/mda-mgciytzb45z6z8yj.mp4" },
+            { name: "忘记你需要多久", url: "https://vd2.bdstatic.com/mda-mc1sm1r5s9azchjv/v1-cae/1080p/mda-mc1sm1r5s9azchjv.mp4" },
+            { name: "抖音夜夜夜漫长", url: "https://vdse.bdstatic.com/13da18e12728e9d7849f6589a3070b4c.mp4" },
+            { name: "火爆伤感情歌6首", url: "https://vdse.bdstatic.com/80e0473f97055cec1c9c76c1c7e5498a.mp4" },
+            { name: "几首比较火的DJ情歌", url: "https://vdse.bdstatic.com/4d7e8fe409b2ba9e08b179de8e146fa3.mp4" },
+            { name: "花都开了你来不来DJ", url: "https://vd3.bdstatic.com/mda-mdee523swbezmsin/480p/h264/1618480997/mda-mdee523swbezmsin.mp4" }
+        ];
+
+        let currentIndex = 0;
+        let sidebarVisible = false;
+        const player = document.getElementById('player');
+        const nowPlaying = document.getElementById('nowPlaying');
+        const videoList = document.getElementById('videoList');
+        const sidebar = document.getElementById('sidebar');
+        const menuTrigger = document.getElementById('menuTrigger');
+
+        // 生成列表
+        videos.forEach((video, index) => {
+            const li = document.createElement('li');
+            li.className = 'video-item' + (index === 0 ? ' active' : '');
+            li.innerHTML = `<span class="number">${String(index + 1).padStart(2, '0')}</span>${video.name}`;
+            li.onclick = () => playVideo(index);
+            videoList.appendChild(li);
+        });
+
+        function playVideo(index) {
+            currentIndex = index;
+            player.src = videos[index].url;
+            nowPlaying.textContent = `正在播放: ${videos[index].name}`;
+            player.play();
+            
+            // 更新列表高亮
+            document.querySelectorAll('.video-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            
+            // 滚动到可见区域
+            document.querySelectorAll('.video-item')[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // 播放时隐藏侧边栏
+            sidebar.classList.remove('show');
+            sidebarVisible = false;
+        }
+
+        function prevVideo() {
+            playVideo(currentIndex > 0 ? currentIndex - 1 : videos.length - 1);
+        }
+
+        function nextVideo() {
+            playVideo(currentIndex < videos.length - 1 ? currentIndex + 1 : 0);
+        }
+
+        function toggleSidebar() {
+            sidebarVisible = !sidebarVisible;
+            sidebar.classList.toggle('show', sidebarVisible);
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevVideo();
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextVideo();
+            if (e.key === 'Escape') {
+                sidebarVisible = false;
+                sidebar.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
