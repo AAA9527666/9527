@@ -9,7 +9,7 @@ async function sha256(str) {
 }
 
 // 这里放你生成的哈希值 ↓↓↓
-const correctHash = "511c4347c467d422b4459827401e0351141849b1941141849b1941141849b194";
+const correctHash = "f831a93fdc17e1c9894b7f4c2777898a072f8919b02a42e7f79d34e7d1168194";
 
 async function checkPwd() {
   const input = document.getElementById("password").value;
